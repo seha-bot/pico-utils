@@ -3,7 +3,7 @@
 
 #define LED 25
 #define BUTTON 24
-#define RGB 24
+#define RGB 23
 
 void init_button()
 {
@@ -22,4 +22,9 @@ void init_led()
     gpio_init(LED);
     sleep_ms(2);
     gpio_set_dir(LED, GPIO_OUT);
+}
+
+void write_pin(int val)
+{
+    gpio_put(LED, val);
 }
