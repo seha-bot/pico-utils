@@ -24,7 +24,9 @@ void init_led()
     gpio_set_dir(LED, GPIO_OUT);
 }
 
-void write_pin(int val)
+int ledica = 0;
+void lediraj()
 {
-    gpio_put(LED, val);
+    ledica = !ledica;
+    gpio_put(LED, ledica);
 }
