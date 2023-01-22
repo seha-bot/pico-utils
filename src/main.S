@@ -3,22 +3,32 @@
 .global main
 
 .data
-NUM_A: .word 1
-NUM_B: .word 1
+SIZE: .word 5
 
 .text
 main:
     bl stdio_init_all
-    ldr r4, =NUM_A
-    ldr r5, =NUM_B
 loop:
-    ldr r0, [r4]
-    ldr r1, [r5]
-    adds r1, r0
-    str r1, [r4]
-    str r0, [r5]
+    ldr r6, =SIZE
+    ldr r4, [r6]
+    i:
+        ldr r5, [r6]
+        j:
+            cmp r4, r5
+            blt skip
+            ldr r0, =STAR
+            bl printf
+            skip:
+            subs r5, #1
+            bne j
+        @END J
+        ldr r0, =NEWL
+        bl printf
+        subs r4, #1
+        bne i
+    @END I
 
-    adr r0, PRNT
+    ldr r0, =NEWL
     bl printf
 
     movs r0, #250
@@ -28,4 +38,5 @@ loop:
     b loop
 
 .align 4
-PRNT: .asciz "%d\n"
+STAR: .asciz "* "
+NEWL: .asciz "\n"
