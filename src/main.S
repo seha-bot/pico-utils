@@ -2,10 +2,15 @@
 .thumb_func
 .global main
 
+.data
+NUM_A: .word 1
+NUM_B: .word 1
+
+.text
 main:
     bl stdio_init_all
-    ldr r4, AVA
-    ldr r5, AVB
+    ldr r4, =NUM_A
+    ldr r5, =NUM_B
 loop:
     ldr r0, [r4]
     ldr r1, [r5]
@@ -13,7 +18,7 @@ loop:
     str r1, [r4]
     str r0, [r5]
 
-    ldr r0, =NUM
+    adr r0, PRNT
     bl printf
 
     movs r0, #250
@@ -23,10 +28,4 @@ loop:
     b loop
 
 .align 4
-AVA: .word VA
-AVB: .word VB
-
-.data
-VA: .word 1
-VB: .word 0
-NUM: .asciz "%d\n"
+PRNT: .asciz "%d\n"

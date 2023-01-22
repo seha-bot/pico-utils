@@ -1,3 +1,9 @@
+@ .EQU -- constant (#define)
+@ .ALIGN -- byte alignment
+@ .GLOBAL -- program starting point
+@ .WORD -- 4 bytes (32 bit value)
+@ .ASCIZ -- string
+
 @ B -- branch
 @ BL -- branch, but after executing return to that same place
 

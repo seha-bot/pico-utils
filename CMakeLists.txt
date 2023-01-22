@@ -10,7 +10,7 @@ pico_sdk_init()
 
 include_directories(src include)
 
-add_executable(seha_utils src/a.c src/main.S include/pico_utils.h)
+add_executable(seha_utils src/main.S include/pico_utils.h)
 
 pico_add_extra_outputs(seha_utils)
 target_link_libraries(seha_utils pico_stdlib)
