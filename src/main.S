@@ -11,17 +11,17 @@ main:
     ldr r4, =SIO_BASE
     ldr r4, [r4]
 loop:
-    @ ldr r0, =INTENSITY
-    @ ldr r0, [r0]
-    @ movs r1, #0xFF
-    @ ands r0, r1
-    ldr r0, =0xFFFFFF
+    ldr r0, =INTENSITY
+    ldr r0, [r0]
+    movs r1, #0xFF
+    ands r0, r1
+    @ ldr r0, =0xFF0000
     bl light
 
-    @ ldr r0, =INTENSITY
-    @ ldr r1, [r0]
-    @ adds r1, #1
-    @ str r1, [r0]
+    ldr r0, =INTENSITY
+    ldr r1, [r0]
+    adds r1, #1
+    str r1, [r0]
 
     movs r0, #25
     bl sleep_ms
@@ -45,31 +45,55 @@ light:
         pop {r0}
         cmp r0, #0
         beq zero
-        str r5, [r4, #20]
-        bl tw_fv
-        bl tw_fv
-        str r5, [r4, #24]
-        bl tw_fv
-        b skip
+        one:
+            str r5, [r4, #20]
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
+            str r5, [r4, #24]
+            bl ns100
+            bl ns100
+            bl ns100
+            @AUTO DELAY 6 instructions (14 cycles * 8 ns/cycle = 112ns)
+            b skip
         zero:
             str r5, [r4, #20]
-            bl tw_fv
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
             str r5, [r4, #24]
-            bl tw_fv
-            bl tw_fv
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
+            bl ns100
+            @AUTO DELAY 6 instructions (14 cycles * 8 ns/cycle = 112ns)
             b skip
         skip:
         subs r1, #1
         bne colors
+    @END colors
     pop {pc}
 @END light
 
-tw_fv:
-    movs r0, #1
-    tw_fv_cnt:
-        subs r0, #1
-        bne tw_fv_cnt
-    bx lr
+@ 3 cycles for calling
+ns100: @ 100ns = 12.5 cycles * 8 ns/cycle
+    adds r0, #1 @ 1 cycle
+    adds r0, #1 @ 1 cycle
+    adds r0, #1 @ 1 cycle
+    adds r0, #1 @ 1 cycle
+    adds r0, #1 @ 1 cycle
+    adds r0, #1 @ 1 cycle
+    bx lr @ 3 cycles
+@END ns100
 
 .data
 SIO_BASE: .word 0xd0000000
