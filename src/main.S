@@ -6,24 +6,70 @@ main:
     bl stdio_init_all
     bl init_neo
 
+    movs r6, #0 @ V
+
     movs r5, #1
     lsls r5, #23
     ldr r4, =SIO_BASE
     ldr r4, [r4]
 loop:
-    ldr r0, =INTENSITY
+    ldr r0, =INT_R
     ldr r0, [r0]
-    movs r1, #0xFF
-    ands r0, r1
-    @ ldr r0, =0xFF0000
+    lsls r0, #8
+    ldr r1, =INT_B
+    ldr r1, [r1]
+    adds r0, r1
     bl light
 
-    ldr r0, =INTENSITY
-    ldr r1, [r0]
-    adds r1, #1
-    str r1, [r0]
+    @ if(v == 0) R++ if(R == 255) v++
+    @ if(v == 1) B++ if(B == 255) v++
+    @ if(v == 2) R-- if(R == 0b0) v++
+    @ if(v == 3) B-- if(B == 0b0) v=0
 
-    movs r0, #25
+    cmp r6, #0
+    beq v0
+    cmp r6, #1
+    beq v1
+    cmp r6, #2
+    beq v2
+    @v3
+        ldr r0, =INT_B
+        ldr r1, [r0]
+        subs r1, #1
+        str r1, [r0]
+        cmp r1, #0
+        bne vnskip
+        movs r6, #0
+    b vnskip
+    v0:
+        ldr r0, =INT_R
+        ldr r1, [r0]
+        adds r1, #1
+        str r1, [r0]
+        cmp r1, #255
+        bne vnskip
+        adds r6, #1
+    b vnskip
+    v1:
+        ldr r0, =INT_B
+        ldr r1, [r0]
+        adds r1, #1
+        str r1, [r0]
+        cmp r1, #255
+        bne vnskip
+        adds r6, #1
+    b vnskip
+    v2:
+        ldr r0, =INT_R
+        ldr r1, [r0]
+        subs r1, #1
+        str r1, [r0]
+        cmp r1, #0
+        bne vnskip
+        adds r6, #1
+    vnskip:
+
+    movs r0, #2
     bl sleep_ms
     b loop
 @END loop
@@ -97,4 +143,6 @@ ns100: @ 100ns = 12.5 cycles * 8 ns/cycle
 
 .data
 SIO_BASE: .word 0xd0000000
-INTENSITY: .word 1
+INT_R: .word 0
+INT_G: .word 0
+INT_B: .word 0
