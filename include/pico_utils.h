@@ -1,3 +1,6 @@
+#ifndef PICO_UTILS
+#define PICO_UTILS
+
 #include<stdio.h>
 #include"pico/stdlib.h"
 
@@ -34,3 +37,37 @@ void set_led()
 {
     gpio_put(LED, 1);
 }
+
+#ifdef IR
+void init_ir()
+{
+    gpio_init(IR);
+    gpio_set_dir(IR, GPIO_IN);
+    gpio_pull_up(IR);
+}
+
+uint64_t get_ir()
+{
+    if(!gpio_get(IR))
+    {
+        uint64_t fin = 0;
+        uint8_t newValue, oldValue = 0, last = 0;
+        for(int i = 0; i < 350; i++)
+        {
+            newValue = gpio_get(IR);
+            if(newValue != oldValue)
+            {
+                fin |= (i - last < 5);
+                fin <<= 1;
+                last = i;
+            }
+            oldValue = newValue;
+            sleep_us(200);
+        }
+        return fin;
+    }
+    return 0;
+}
+#endif /*IR*/
+
+#endif /*PICO_UTILS*/
