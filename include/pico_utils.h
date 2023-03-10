@@ -33,11 +33,6 @@ void init_neo()
     gpio_set_dir(NEO, GPIO_OUT);
 }
 
-void set_led()
-{
-    gpio_put(LED, 1);
-}
-
 #ifdef IR
 void init_ir()
 {
