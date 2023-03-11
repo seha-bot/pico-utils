@@ -1,6 +1,11 @@
 #define IR 29
 #include"pico_utils.h"
-#include"pico_lcd.h"
+#include<time.h>
+
+void c_init()
+{
+    init_ir();
+}
 
 uint8_t decode(uint64_t ir)
 {
@@ -21,27 +26,60 @@ uint8_t decode(uint64_t ir)
     }
 }
 
-void c_init()
+uint16_t hash_32(uint32_t n)
 {
-    init_ir();
+    return (n & 0xffff) ^ ((n >> 16) & 0xffff);
 }
 
-uint16_t pass = 0;
+uint16_t rand(uint32_t seed)
+{
+    return hash_32(hash_32(seed * 654) * hash_32(seed * 54323));
+}
+
+uint8_t input = 0;
+uint16_t user = 0;
+uint8_t began = 0;
+uint64_t seed = 0;
+time_t offset = 0;
 
 void c_loop()
 {
-    uint64_t ir = get_ir();
-    if(!ir) return;
-    // printf("0x%llx\n", ir);
-    uint8_t v = decode(ir);
-    if(v == 11) return;
-    printf("%d\n", v);
-    pass |= v;
-    if(pass == 0x9277)
+    input = decode(get_ir());
+    if(input == 11) return;
+    if(input == 10)
+    {
+        began = !began;
+        user = 0;
+        if(began) offset = time(0);
+        else seed = 0;
+        printf("OK\n");
+        goto await;
+    }
+    if(!began)
+    {
+        printf("PASS += %d\n", input);
+        seed *= 10;
+        seed += input;
+        goto await;
+    }
+
+    time_t t = (time(0) - offset + seed) / 60;
+
+    uint16_t pass = rand(t);
+    if((pass & 0x000f) > 0x0009) pass &= 0xfff9;
+    if((pass & 0x00f0) > 0x0090) pass &= 0xff9f;
+    if((pass & 0x0f00) > 0x0900) pass &= 0xf9ff;
+    if((pass & 0xf000) > 0x9000) pass &= 0x9fff;
+
+    printf("SEED(%lld) = 0x%04x\n", t, pass);
+
+    user |= input;
+    printf("USER = 0x%04x\n", user);
+    if(user == pass)
     {
         printf("UNLOCKED\n");
-        pass = 0;
+        user = 0;
     }
-    pass <<= 4;
-    sleep_ms(300);
+    user <<= 4;
+    await: sleep_ms(300);
 }
